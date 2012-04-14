@@ -100,7 +100,7 @@ if ($argc >= 3 && $argc < 5) {
         exit -1;
     }
 
-    if ($host != "all" && !isset($hosts[$group][$host])) {
+    if ($host != "all" && $group != "all" && !isset($hosts[$group][$host])) {
         echo "ERROR: unknown host: '" . $host . "' in group: '" . $group . "'\n";
         exit -1;
     }
