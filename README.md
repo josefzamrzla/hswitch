@@ -8,6 +8,7 @@ Usage: hswitch hostname|all groupname|all [on (default)|off]
 ```
 
 Sample hosts file
+
 ```bash
     # devel
     10.0.0.0 couchdb
@@ -23,6 +24,7 @@ Sample hosts file
 ```
 
 Sample switching
+
 ```bash
     # switch couchdb to: preprod
     hswitch couchdb preprod
