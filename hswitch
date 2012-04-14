@@ -1,8 +1,21 @@
 #!/usr/bin/php
 <?php
+######################################################
+# SETTINGS
 
 $HOSTS_FILE = "/etc/hosts";
+
+$HOSTS_FILE_BACKUP = "/etc/hosts.backup";
+
 $IP_ADDR_REGEXP = "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+";
+
+######################################################
+
+// make initial backup if not exists
+if (!file_exists($HOSTS_FILE_BACKUP)) {
+    file_put_contents($HOSTS_FILE_BACKUP,
+        file_get_contents($HOSTS_FILE));
+}
 
 $group = "__default";
 $groups = array($group => array());
@@ -58,27 +71,23 @@ function setHostState($hostStr, $state)
 
 function printFile(array $hosts)
 {
+    $content = "";
     foreach ($hosts as $groupName => $groupHosts) {
         ksort($groupHosts);
-        echo "#" . $groupName . "\n";
+        $content .= "#" . $groupName . "\n";
         foreach ($groupHosts as $groupHost => $hostStr) {
             $parts = explode(":", $hostStr);
 
             if ($parts[1] == "off") {
-                echo "#";
+                $content .= "#";
             }
 
-            echo $parts[0] . "\t" . $groupHost . "\n";
+            $content .= $parts[0] . "\t" . $groupHost . "\n";
         }
-        echo "\n";
+        $content .= "\n";
     }
+    return $content;
 }
-
-// origin
-ob_start();
-printFile($hosts);
-file_put_contents("/tmp/hosts/origin", ob_get_contents());
-ob_end_clean();
 
 if ($argc >= 3 && $argc < 5) {
 
@@ -123,6 +132,7 @@ if ($argc >= 3 && $argc < 5) {
         if ($host == "all") {
             // all devel on|off
             if ($state == "on") {
+                // disable all hosts with same name
                 $disable = array_keys($hosts[$group]);
 
                 foreach ($hosts as $groupName => $groupHosts) {
@@ -141,6 +151,7 @@ if ($argc >= 3 && $argc < 5) {
         } else {
             // couch devel on|off
             if ($state == "on") {
+                // disable all hosts with same name
                 foreach($hosts as $groupName => $groupHosts) {
                     if (isset($hosts[$groupName][$host])) {
                         $hosts[$groupName][$host] = setHostState($hosts[$groupName][$host], "off");
@@ -154,11 +165,8 @@ if ($argc >= 3 && $argc < 5) {
 
 } else {
     echo "Hosts switcher tool\nVersion: 0.1a\nCopyright (C) 2012 by Josef Zamrzla\n\n";
-    echo "Usage: hswitch [hostname]|[all] [group]|[all] on (default)|off]\n\n";
+    echo "Usage: hswitch hostname|all groupname|all [on (default)|off]\n\n";
 }
 
-// modified
-ob_start();
-printFile($hosts);
-file_put_contents("/tmp/hosts/modified", ob_get_contents());
-ob_end_clean();
+// write new hosts file
+file_put_contents($HOSTS_FILE, printFile($hosts));
