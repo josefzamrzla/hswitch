@@ -18,7 +18,7 @@ Script must be run under root rights!
 
 ## Usage
 ```bash
-Usage: hswitch hostname|all groupname|all [on (default)|off]
+    hswitch hostname|all groupname|all [on (default)|off]
 ```
 
 Sample hosts file: couchdb and mysql links to "devel", elastic links to "preprod"
