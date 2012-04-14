@@ -1,6 +1,19 @@
 # hswitch
 
-Simple command line tool to switch hosts in /etc/hosts by environment groups
+Simple command line tool to switch hosts in /etc/hosts by environment groups.
+
+FOR DEVELOPMENT USE ONLY, NOT FOR PRODUCTION USE!!!
+
+## Installation
+
+Copy script to some dir in your PATH and set up some rights
+```bash
+chmod 4755 /usr/bin/hswitch
+chown root:root /usr/bin/hswitch
+chmod u+s /usr/bin/hswitch
+```
+
+Script must be run under root rights!
 
 ## Usage
 ```bash
