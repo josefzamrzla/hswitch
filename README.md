@@ -7,11 +7,10 @@ FOR DEVELOPMENT USE ONLY, NOT FOR PRODUCTION USE!!!
 ## Installation
 
 Copy script to some dir in your PATH and set up some rights
+
 ```bash
     chmod 4755 /usr/bin/hswitch
-
     chown root:root /usr/bin/hswitch
-
     chmod u+s /usr/bin/hswitch
 ```
 
