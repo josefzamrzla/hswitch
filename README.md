@@ -1,26 +1,29 @@
 # hswitch
 
-Simple command line tool to switch hosts in /etc/hosts
+Simple command line tool to switch hosts in /etc/hosts by environment groups
 
 ## Usage
 ```bash
 Usage: hswitch hostname|all groupname|all [on (default)|off]
 ```
 
-Sample hosts file
+Sample hosts file: couchdb and mysql links to "devel", elastic links to "preprod"
 
 ```bash
     # devel
     10.0.0.0 couchdb
     10.0.0.1 mysql
+    # 10.0.0.2 elastic
 
     # preprod
     # 11.0.0.0 couchdb
+    11.0.0.2 elastic
     # 11.0.0.1 mysql
 
     # prod
     # 12.0.0.0 couchdb
     # 12.0.0.1 mysql
+    # 12.0.0.2 elastic
 ```
 
 Sample switching
@@ -32,6 +35,13 @@ Sample switching
     # disable all mysql hosts
     hswitch mysql all off
 
+    # switch all hosts to: preprod
+    hswitch all preprod
 
+    # disable all "devel" hosts
+    hswitch all devel off
+
+    # disable all hosts
+    hswitch all all off
 
 ```
