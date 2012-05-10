@@ -75,7 +75,7 @@ Replace existent host - IP correction to 10.0.0.3
 
 ```bash
 
-    hswitch -add mysql2 10.0.0.3 devel
+    hswitch -replace mysql2 10.0.0.3 devel
 
 ```
 
