@@ -19,6 +19,9 @@ Script must be run under root rights!
 ## Usage
 ```bash
     hswitch hostname|all groupname|all [on (default)|off]
+    hswitch -l hostname|groupname
+    hswitch -add hostname ip [groupname]
+    hswitch -replace hostname ip [groupname]
 ```
 
 Sample hosts file: couchdb and mysql links to "devel", elastic links to "preprod"
