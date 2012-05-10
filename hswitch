@@ -245,6 +245,6 @@ if ($argc >= 3 && $argc <= 5) {
     echo "Hosts switcher tool\nVersion: 0.1a\nCopyright (C) 2012 by Josef Zamrzla\n\n";
     echo "Usage:\n\thswitch hostname|all groupname|all [on (default)|off]\n";
     echo "\thswitch -l hostname|groupname\n";
-    echo "\thswitch -add hostname ip [groupname]\n\n";
+    echo "\thswitch -add hostname ip [groupname]\n";
     echo "\thswitch -replace hostname ip [groupname]\n\n";
 }
