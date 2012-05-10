@@ -62,3 +62,35 @@ Sample switching
     hswitch all all off
 
 ```
+
+Add new host - mysql2 running on devel with IP 10.0.0.33
+
+```bash
+
+    hswitch -add mysql2 10.0.0.33 devel
+
+```
+
+Replace existent host - IP correction to 10.0.0.3
+
+```bash
+
+    hswitch -add mysql2 10.0.0.3 devel
+
+```
+
+List of all groups where host 'mysql' is defined
+
+```bash
+
+    hswitch -l mysql
+
+```
+
+List of all hosts in 'devel' group
+
+```bash
+
+    hswitch -l devel
+
+```
