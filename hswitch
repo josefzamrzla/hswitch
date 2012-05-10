@@ -95,19 +95,61 @@ if ($argc >= 3 && $argc < 5) {
     $group = trim($argv[2]);
     $state = isset($argv[3])? trim($argv[3]): "on";
 
+    if ($argv[1] == "-l") {
+
+        if (isset($hosts[$argv[2]])) {
+            // list group
+            $maxHostNameLength = 0;
+            foreach ($hosts[$argv[2]] as $hostName => $hostStr) {
+                if (strlen($hostName) > $maxHostNameLength)
+                    $maxHostNameLength = strlen($hostName);
+            }
+
+            foreach ($hosts[$argv[2]] as $hostName => $hostStr) {
+                $hostParts = explode(":", $hostStr);
+                //echo $hostName . "\t" . $hostParts[0] . "\t[" . $hostParts[1] . "]\n";
+
+                echo "\033[0;37m" . str_pad($hostName, $maxHostNameLength, ' ') . "\t" . $hostParts[0];
+                echo "\t[\033[0;" . (($hostParts[1] == "on")? "32":"31") . "m" . strtoupper($hostParts[1]) . "\033[0;37m]\n";
+            }
+        } else {
+            // list host
+            $maxGroupNameLength = 0;
+            foreach ($hosts as $group => $groupHosts) {
+                foreach ($groupHosts as $hostName => $hostStr) {
+                    if ($hostName == $argv[2]) {
+                        if (strlen($group) > $maxGroupNameLength)
+                            $maxGroupNameLength = strlen($group);
+                    }
+                }
+            }
+            foreach ($hosts as $group => $groupHosts) {
+                foreach ($groupHosts as $hostName => $hostStr) {
+                    if ($hostName == $argv[2]) {
+                        $hostParts = explode(":", $hostStr);
+                        echo "\033[0;37m" . str_pad($group, $maxGroupNameLength, ' ') . "\t" . $hostParts[0];
+                        echo "\t[\033[0;" . (($hostParts[1] == "on")? "32":"31") . "m" . strtoupper($hostParts[1]) . "\033[0;37m]\n";
+                    }
+                }
+            }
+        }
+
+        exit(0);
+    }
+
     if ($group != "all" && !isset($hosts[$group])) {
         echo "ERROR: unknown group: '" . $group . "'\n";
-        exit -1;
+        exit(-1);
     }
 
     if ($host != "all" && $group != "all" && !isset($hosts[$group][$host])) {
         echo "ERROR: unknown host: '" . $host . "' in group: '" . $group . "'\n";
-        exit -1;
+        exit(-1);
     }
 
     if ($group == "all" && $state == "on") {
         echo "ERROR: cannot enable all hosts\n";
-        exit -1;
+        exit(-1);
     }
 
     if ($group == "all") {
@@ -165,7 +207,8 @@ if ($argc >= 3 && $argc < 5) {
 
 } else {
     echo "Hosts switcher tool\nVersion: 0.1a\nCopyright (C) 2012 by Josef Zamrzla\n\n";
-    echo "Usage: hswitch hostname|all groupname|all [on (default)|off]\n\n";
+    echo "Usage:\n\thswitch hostname|all groupname|all [on (default)|off]\n";
+    echo "\thswitch -l hostname|groupname\n\n";
 }
 
 // write new hosts file
