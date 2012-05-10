@@ -17,7 +17,9 @@ if (!file_exists($HOSTS_FILE_BACKUP)) {
         file_get_contents($HOSTS_FILE));
 }
 
-$group = "__default";
+define("DEFAULT_GROUP_NAME", "__default");
+
+$group = DEFAULT_GROUP_NAME;
 $groups = array($group => array());
 $rows = file($HOSTS_FILE);
 
@@ -89,14 +91,10 @@ function printFile(array $hosts)
     return $content;
 }
 
-if ($argc >= 3 && $argc < 5) {
-
-    $host = trim($argv[1]);
-    $group = trim($argv[2]);
-    $state = isset($argv[3])? trim($argv[3]): "on";
+if ($argc >= 3 && $argc <= 5) {
 
     if ($argv[1] == "-l") {
-
+        // print content of chosen host/group
         if (isset($hosts[$argv[2]])) {
             // list group
             $maxHostNameLength = 0;
@@ -136,6 +134,42 @@ if ($argc >= 3 && $argc < 5) {
 
         exit(0);
     }
+
+    if ($argv[1] == "-add" || $argv[1] == "-replace") {
+
+        if($argc < 4) {
+            echo "ERROR: insufficient parameters\n";
+            echo "Usage: hswitch -add hostname ip [groupname]\n";
+            exit(-1);
+        }
+
+        $newHostName = trim($argv[2]);
+        $newHostIp = trim($argv[3]);
+        $group = isset($argv[4])? trim($argv[4]) : DEFAULT_GROUP_NAME;
+
+        if (isset($hosts[$group][$newHostName]) && $argv[1] == "-add") {
+            echo "ERROR: hostname already exists! To replace existent hostname use -replace option\n";
+            exit(-1);
+        }
+
+        // disable same name hosts
+        foreach ($hosts as $groupName => $groupHosts) {
+            foreach ($groupHosts as $groupHost => $hostStr) {
+                if ($groupHost == $newHostName) {
+                    $hosts[$groupName][$groupHost] = setHostState($hosts[$groupName][$groupHost], "off");
+                }
+            }
+        }
+
+        $hosts[$group][$newHostName] = $newHostIp . ":on";
+
+        file_put_contents($HOSTS_FILE, printFile($hosts));
+        exit(0);
+    }
+
+    $host = trim($argv[1]);
+    $group = trim($argv[2]);
+    $state = isset($argv[3])? trim($argv[3]): "on";
 
     if ($group != "all" && !isset($hosts[$group])) {
         echo "ERROR: unknown group: '" . $group . "'\n";
@@ -205,11 +239,12 @@ if ($argc >= 3 && $argc < 5) {
         }
     }
 
+    file_put_contents($HOSTS_FILE, printFile($hosts));
+
 } else {
     echo "Hosts switcher tool\nVersion: 0.1a\nCopyright (C) 2012 by Josef Zamrzla\n\n";
     echo "Usage:\n\thswitch hostname|all groupname|all [on (default)|off]\n";
-    echo "\thswitch -l hostname|groupname\n\n";
+    echo "\thswitch -l hostname|groupname\n";
+    echo "\thswitch -add hostname ip [groupname]\n\n";
+    echo "\thswitch -replace hostname ip [groupname]\n\n";
 }
-
-// write new hosts file
-file_put_contents($HOSTS_FILE, printFile($hosts));
