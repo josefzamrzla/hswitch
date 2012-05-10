@@ -107,7 +107,7 @@ if ($argc >= 3 && $argc <= 5) {
                 $hostParts = explode(":", $hostStr);
                 //echo $hostName . "\t" . $hostParts[0] . "\t[" . $hostParts[1] . "]\n";
 
-                echo "\033[0;37m" . str_pad($hostName, $maxHostNameLength, ' ') . "\t" . $hostParts[0];
+                echo "\033[0;37m" . str_pad($hostName, $maxHostNameLength, ' ') . "\t" . str_pad($hostParts[0], 15, ' ');
                 echo "\t[\033[0;" . (($hostParts[1] == "on")? "32":"31") . "m" . strtoupper($hostParts[1]) . "\033[0;37m]\n";
             }
         } else {
@@ -125,7 +125,7 @@ if ($argc >= 3 && $argc <= 5) {
                 foreach ($groupHosts as $hostName => $hostStr) {
                     if ($hostName == $argv[2]) {
                         $hostParts = explode(":", $hostStr);
-                        echo "\033[0;37m" . str_pad($group, $maxGroupNameLength, ' ') . "\t" . $hostParts[0];
+                        echo "\033[0;37m" . str_pad($group, $maxGroupNameLength, ' ') . "\t" . str_pad($hostParts[0], 15, ' ');
                         echo "\t[\033[0;" . (($hostParts[1] == "on")? "32":"31") . "m" . strtoupper($hostParts[1]) . "\033[0;37m]\n";
                     }
                 }
