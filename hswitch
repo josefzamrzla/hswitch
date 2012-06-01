@@ -1,5 +1,6 @@
 #!/usr/bin/php
 <?php
+ob_start();
 ######################################################
 # SETTINGS
 
@@ -91,6 +92,26 @@ function printFile(array $hosts)
     return $content;
 }
 
+if ($argc >= 2) {
+
+    if ($argv[1] == "-all-groups") {
+        ob_clean();
+        echo implode(" ", array_keys($hosts));
+        exit(0);
+    }
+
+    if ($argv[1] == "-all-hosts") {
+        $allHosts = array();
+        foreach ($hosts as $group) {
+            $allHosts = array_merge($allHosts, array_keys($group));
+        }
+
+        ob_clean();
+        echo implode(" ", array_unique($allHosts));
+        exit(0);
+    }
+}
+
 if ($argc >= 3 && $argc <= 5) {
 
     if ($argv[1] == "-l") {
@@ -103,6 +124,7 @@ if ($argc >= 3 && $argc <= 5) {
                     $maxHostNameLength = strlen($hostName);
             }
 
+            ob_clean();
             echo "\n" . str_pad("host", $maxHostNameLength, ' ') . "\t" . str_pad("ip", 15, ' ') . "\tstate\n";
             echo str_repeat("-", $maxHostNameLength) . "\t" . str_repeat("-", 15) . "\t-----\n";
             foreach ($hosts[$argv[2]] as $hostName => $hostStr) {
@@ -123,7 +145,7 @@ if ($argc >= 3 && $argc <= 5) {
                     }
                 }
             }
-
+            ob_clean();
             echo "\n" . str_pad("host", $maxGroupNameLength, ' ') . "\t" . str_pad("ip", 15, ' ') . "\tstate\n";
             echo str_repeat("-", $maxGroupNameLength) . "\t" . str_repeat("-", 15) . "\t-----\n";
             foreach ($hosts as $group => $groupHosts) {
@@ -145,6 +167,7 @@ if ($argc >= 3 && $argc <= 5) {
     if ($argv[1] == "-add" || $argv[1] == "-replace") {
 
         if($argc < 4) {
+            ob_clean();
             echo "ERROR: insufficient parameters\n";
             echo "Usage: hswitch -add hostname ip [groupname]\n";
             exit(-1);
@@ -155,6 +178,7 @@ if ($argc >= 3 && $argc <= 5) {
         $group = isset($argv[4])? trim($argv[4]) : DEFAULT_GROUP_NAME;
 
         if (isset($hosts[$group][$newHostName]) && $argv[1] == "-add") {
+            ob_clean();
             echo "ERROR: hostname already exists! To replace existent hostname use -replace option\n";
             exit(-1);
         }
@@ -179,16 +203,19 @@ if ($argc >= 3 && $argc <= 5) {
     $state = isset($argv[3])? trim($argv[3]): "on";
 
     if ($group != "all" && !isset($hosts[$group])) {
+        ob_clean();
         echo "ERROR: unknown group: '" . $group . "'\n";
         exit(-1);
     }
 
     if ($host != "all" && $group != "all" && !isset($hosts[$group][$host])) {
+        ob_clean();
         echo "ERROR: unknown host: '" . $host . "' in group: '" . $group . "'\n";
         exit(-1);
     }
 
     if ($group == "all" && $state == "on") {
+        ob_clean();
         echo "ERROR: cannot enable all hosts\n";
         exit(-1);
     }
@@ -249,6 +276,7 @@ if ($argc >= 3 && $argc <= 5) {
     file_put_contents($HOSTS_FILE, printFile($hosts));
 
 } else {
+    ob_clean();
     echo "Hosts switcher tool\nVersion: 0.1a\nCopyright (C) 2012 by Josef Zamrzla\n\n";
     echo "Usage:\n\thswitch hostname|all groupname|all [on (default)|off]\n";
     echo "\thswitch -l hostname|groupname\n";
