@@ -3,10 +3,34 @@ class Hosts_FileParser
 {
     const IP_ADDR_REGEXP = "|[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+|";
     const HOST_STATE_SEPARATOR = "::";
+    const DEFAULT_GROUP_NAME = "__default";
 
-    public function isHostsLine($line)
+    public function parse($fileContent)
     {
-        return (preg_match(self::IP_ADDR_REGEXP, $line) !== 0);
+        $group = self::DEFAULT_GROUP_NAME;
+        $parsedHosts = array();
+
+        foreach (explode("\n", $fileContent) as $line) {
+            $line = trim($line);
+
+            if (strlen($line)) {
+
+                if ($this->isHostsLine($line)) {
+                    $hostsLine = $this->parseHostsLine($line);
+
+                    foreach ($hostsLine as $ip => $hosts) {
+                        foreach ($hosts as $host) {
+                            $parsedHosts[$group][$ip][] = $host;
+                        }
+                    }
+                } elseif (($groupName = $this->parseGroupName($line)) !== false) {
+                    $group = $groupName;
+                }
+
+            }
+        }
+
+        return $parsedHosts;
     }
 
     public function parseGroupName($line)
@@ -27,6 +51,7 @@ class Hosts_FileParser
         $off = false;
         $ip = "unknown";
         $hosts = array();
+        $line = trim(str_replace("#", " #", $line));
         foreach (preg_split("/[\s]+/", $this->replaceMultipleComments($line)) as $part) {
             if (strlen(trim($part))) {
                 if ($part == "#") {
@@ -49,6 +74,11 @@ class Hosts_FileParser
         }
 
         return $hosts;
+    }
+
+    public function isHostsLine($line)
+    {
+        return (preg_match(self::IP_ADDR_REGEXP, $line) !== 0);
     }
 
     public function replaceMultipleComments($line)

@@ -49,4 +49,141 @@ class Hosts_FileParserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array("1.2.3.4" => array("host::off")), $this->parser->parseHostsLine("1.2.3.4\t# host # "));
         $this->assertEquals(array("unknown" => array("invalid::off", "host::off")), $this->parser->parseHostsLine("invalid host"));
     }
+
+    public function testParseHostsLineWithMultipleActiveHosts()
+    {
+        $expected = array(
+            "127.0.0.1" => array("host1::on", "host2::on", "host3::on", "host4::on"));
+
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1 host1 host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1\thost1 host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1\thost1\thost2 host3 host4"));
+    }
+
+    public function testParseHostsLineWithMultiplePasiveHosts()
+    {
+        $expected = array(
+            "127.0.0.1" => array("host1::off", "host2::off", "host3::off", "host4::off"));
+
+        $this->assertEquals($expected, $this->parser->parseHostsLine("#127.0.0.1 host1 host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("#127.0.0.1 #host1 host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine(" # 127.0.0.1 #host1 host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("# 127.0.0.1 #host1 #host2 #host3 #host4"));
+    }
+
+    public function testParseHostsLineWithMixedHosts()
+    {
+        $expected = array(
+            "127.0.0.1" => array("host1::on", "host2::off", "host3::off", "host4::off"));
+
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1 host1 #host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1 host1 ####host2 host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1 host1 #host2 #host3 host4"));
+        $this->assertEquals($expected, $this->parser->parseHostsLine("127.0.0.1 host1#host2 #host3 #host4"));
+    }
+
+    public function testParseEmptyFile()
+    {
+        $this->assertEquals(array(), $this->parser->parse(""));
+    }
+
+    public function testParseWithOneGroup()
+    {
+        $expected = array(
+            "localhost" => array(
+                "127.0.0.1" => array("host1::on", "host2::on")
+            )
+        );
+
+        $file = "#localhost\n
+            127.0.0.1\thost1\n
+            127.0.0.1 host2\n
+            ";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+
+        $expected = array(
+            "localhost" => array(
+                "127.0.0.1" => array("host1::on", "host2::on")
+            )
+        );
+
+        $file = "#localhost\n
+            127.0.0.1\thost1 host2\n";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+
+        $expected = array(
+            "localhost" => array(
+                "127.0.0.1" => array("host1::on", "host2::on", "host3::off")
+            )
+        );
+
+        $file = "#localhost\n
+            127.0.0.1\thost1 host2#### host3\n";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+
+        $expected = array(
+            "localhost" => array(
+                "127.0.0.1" => array("host1::off", "host2::off")
+            )
+        );
+
+        $file = "#localhost\n
+            #127.0.0.1\thost1\n
+            # 127.0.0.1 #host2\n
+            ";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+    }
+
+    public function testParseWithDefaultGroup()
+    {
+        $expected = array(
+            "__default" => array(
+                "1.2.3.4" => array("host1::on", "host2::on"),
+                "2.2.2.2" => array("host3::off")
+            ),
+            "localhost" => array(
+                "127.0.0.1" => array("host4::on")
+            )
+        );
+
+        $file = "
+            1.2.3.4 host1 host2\n
+            #2.2.2.2 host3\n
+            #################\n
+            ### localhost ###\n
+            #################\n
+            127.0.0.1\thost4";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+    }
+
+    public function testParseWithTwoGroups()
+    {
+        $expected = array(
+            "localhost" => array(
+                "127.0.0.1" => array("host1::on", "host2::on", "host3::off")
+            ),
+            "DEVEL" => array(
+                "1.2.3.4" => array("host4::on"),
+                "2.3.4.5" => array("host5::off"),
+                "3.4.5.6" => array("host6::on", "host7::off")
+            )
+        );
+
+        $file = "
+            #localhost\n
+            127.0.0.1 host1 host2\n
+            #127.0.0.1 host3\n
+            \n
+            # DEVEL ###\n
+            1.2.3.4 host4\n
+            2.3.4.5 #host5\n
+            3.4.5.6 host6 #host7\n";
+
+        $this->assertEquals($expected, $this->parser->parse($file));
+    }
 }
